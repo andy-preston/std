@@ -241,15 +241,22 @@ Deno.test({
     assertEquals(parse("+123"), 123);
     assertEquals(parse("-123"), -123);
     assertEquals(parse("123_456"), 123456);
-    assertEquals(parse("0xDEADBEEF"), "0xDEADBEEF");
-    assertEquals(parse("0xdeadbeef"), "0xdeadbeef");
-    assertEquals(parse("0xdead_beef"), "0xdead_beef");
-    assertEquals(parse("0o01234567"), "0o01234567");
-    assertEquals(parse("0o755"), "0o755");
-    assertEquals(parse("0b11010110"), "0b11010110");
+    assertEquals(parse("0xDEADBEEF"), 0xdeadbeef);
+    assertEquals(parse("0xdeadbeef"), 0xdeadbeef);
+    assertEquals(parse("0xdead_beef"), 0xdeadbeef);
+    assertEquals(parse("0o01234567"), 0o01234567);
+    assertEquals(parse("0o0123_456"), 0o0123456);
+    assertEquals(parse("0o755"), 0o755);
+    assertEquals(parse("0b11010110"), 0b11010110);
+    assertEquals(parse("0b1101_0110"), 0b11010110);
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
+    assertThrows(() => parse("0xdeno"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0o"));
+    assertThrows(() => parse("0o99"));
+    assertThrows(() => parse("0b"));
+    assertThrows(() => parse("0b23"));
   },
 });
 
@@ -688,12 +695,14 @@ Deno.test({
         int5: 1000,
         int6: 5349221,
         int7: 12345,
-        hex1: "0xDEADBEEF",
-        hex2: "0xdeadbeef",
-        hex3: "0xdead_beef",
-        oct1: "0o01234567",
-        oct2: "0o755",
-        bin1: "0b11010110",
+        hex1: 0xdeadbeef,
+        hex2: 0xdeadbeef,
+        hex3: 0xdeadbeef,
+        oct1: 0o01234567,
+        oct2: 0o123456,
+        oct3: 0o755,
+        bin1: 0b11010110,
+        bin2: 0b11010110,
       },
     };
     const actual = parse(`[integer]
@@ -712,10 +721,12 @@ hex3 = 0xdead_beef
 
 # octal with prefix \`0o\`
 oct1 = 0o01234567
-oct2 = 0o755 # useful for Unix file permissions
+oct2 = 0o123_456
+oct3 = 0o755 # useful for Unix file permissions
 
 # binary with prefix \`0b\`
-bin1 = 0b11010110`);
+bin1 = 0b11010110
+bin2 = 0b1101_0110`);
     assertEquals(actual, expected);
   },
 });

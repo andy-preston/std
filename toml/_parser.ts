@@ -541,13 +541,17 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   const first2 = scanner.slice(0, 2);
   if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
     scanner.next(2);
-    const acc = [first2];
-    while (/[0-9a-f_]/i.test(scanner.char()) && !scanner.eof()) {
+    const acc = [];
+    const base = first2 == "0x" ? 16 : first2 == "0o" ? 8 : 2;
+    const pattern = base == 16 ? /[0-9a-f_]/i : base == 8 ? /[0-7_]/ : /[01_]/;
+
+    while (pattern.test(scanner.char()) && !scanner.eof()) {
       acc.push(scanner.char());
       scanner.next();
     }
-    if (acc.length === 1) return failure();
-    return success(acc.join(""));
+    if (acc.length === 0) return failure();
+    const asString = acc.filter((char) => char !== "_").join("");
+    return success(parseInt(asString, base));
   }
 
   const acc = [];
